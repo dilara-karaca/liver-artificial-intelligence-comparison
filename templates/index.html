@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Karaciğer Hastalıkları – Model Karşılaştırma</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            padding: 0;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            padding: 15px 0;
+            margin: 0;
+            background: #f9f9f9;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+            padding: 15px 20px;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        .info {
+            background: #ecf0f1;
+            padding: 12px 20px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .models {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 15px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .card {
+            border-radius: 8px;
+            padding: 20px;
+            background: #ffffff;
+            border-left: 6px solid #bdc3c7;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card.dataset {
+            border-color: #16a085;
+        }
+
+        .card.groq {
+            border-color: #e67e22;
+        }
+
+        .card.gemini {
+            border-color: #9b59b6;
+        }
+
+        .card.poe {
+            border-color: #27ae60;
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .source {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .answer {
+            flex: 1;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            font-size: 14px;
+            color: #2c3e50;
+            padding-right: 10px;
+        }
+
+        .answer::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .answer::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .answer::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .answer::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #95a5a6;
+            border-top: 1px solid #ddd;
+            background: #f9f9f9;
+        }
+
+        @media (max-width: 1200px) {
+            .models {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Karaciğer Hastalıkları – Model Karşılaştırma</h1>
+
+        <form method="post">
+            <input type="text" name="question" placeholder="Sorunuzu yazın..." required>
+            <button type="submit">Sor</button>
+        </form>
+
+        {% if user_question %}
+        <div class="info">
+            <strong>Soru:</strong> {{ user_question }}<br>
+            {% if similarity_info %}
+            <strong>Benzerlik Skoru:</strong> {{ similarity_info.similarity | round(3) }}
+            {% endif %}
+        </div>
+
+        <div class="models">
+            <!-- DATASET SONUCU -->
+            {% if similarity_info %}
+            {% if similarity_info.found %}
+            <div class="card dataset">
+                <h3> Veri Seti Cevapı</h3>
+                <div class="source">
+                    Eşleşen Soru: {{ similarity_info.matched }}<br>
+                    Benzerlik: {{ similarity_info.similarity | round(3) }}
+                </div>
+                <div class="answer">{{ similarity_info.answer }}</div>
+            </div>
+            {% else %}
+            <div class="card dataset">
+                <h3>📚 Veri Seti Cevapı</h3>
+                <div class="source">
+                    Benzerlik: {{ similarity_info.similarity | round(3) }} (Eşik: {{ threshold }})
+                </div>
+                <div class="answer" style="color: #e74c3c; font-style: italic;">⚠️ Eşleşme düşük – Yeterli benzerlik
+                    bulunamadı</div>
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <!-- AI CEVAPLARI -->
+            {% for m in model_results %}
+            <div
+                class="card {% if 'Groq' in m.name %}groq{% endif %}{% if 'Gemini' in m.name %}gemini{% endif %}{% if 'Poe' in m.name %}poe{% endif %}">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="margin: 0;">{{ m.name }}</h3>
+                    <div
+                        style="font-size: 13px; font-weight: bold; color: #27ae60; background: #f0fff0; padding: 5px 10px; border-radius: 4px;">
+                        Doğruluk: {{ m.accuracy }}%
+                    </div>
+                </div>
+                <div class="source">Kaynak: {{ m.provider }}</div>
+                <div class="answer">{{ m.answer }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <footer>
+            Liver AI Model Karşılaştırma
+        </footer>
+    </div>
+
+</body>
+
+</html>
