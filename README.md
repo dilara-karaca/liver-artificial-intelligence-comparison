@@ -1,4 +1,4 @@
-# 🧠 Liver Artificial Intelligence Comparison System
+#  Liver Artificial Intelligence Comparison System
 
 Hybrid QA system comparing dataset-based answers with multiple LLM providers for liver disease questions.
 
@@ -26,7 +26,7 @@ User Question
 → Else → Call LLM APIs (Groq, Gemini, Poe)
 
 ---
-## ⚙️ Technologies Used
+##  Technologies Used
 
 - Python
 - Flask
@@ -36,3 +36,9 @@ User Question
 - HTML/CSS (Frontend)
 
 ---
+
+## Application Screenshots
+
+![Screenshot 1](liver-ai-1.jpeg)
+![Screenshot 2](liver-ai-2.jpeg)
+![Screenshot 3](liver-ai-3.jpeg)
